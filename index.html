@@ -32,18 +32,29 @@ body::before{
   background:white;
   padding:25px;
   border-radius:12px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.25);
 }
 
-.opcion{
-  border:2px solid #ddd;
+.item{
+  border:1px solid #ddd;
   padding:15px;
   border-radius:10px;
   margin-top:10px;
-  cursor:pointer;
 }
-.opcion:hover{border-color:#f97316;}
-.selected{border-color:#f97316;background:#fff7ed;}
+
+.cantidad{
+  display:flex;
+  gap:5px;
+  margin-top:10px;
+}
+.cantidad button{
+  width:30px;height:30px;
+  background:#f97316;color:white;border:none;border-radius:5px;
+}
+
+input{
+  width:60px;
+  text-align:center;
+}
 
 button{
   width:100%;
@@ -63,7 +74,6 @@ button{
   padding:20px;
   border-radius:10px;
   margin-top:20px;
-  line-height:1.6;
 }
 </style>
 </head>
@@ -73,7 +83,7 @@ button{
 <div class="container">
 
 <div class="header">
-<img src="https://drive.google.com/file/d/1fbGMZqW9tL88TpdNOvxQj6_oNIdnutYu/preview" width="640" height="480"></iframe">
+<img src="https://petrocheck.com.ec/wp-content/uploads/2021/09/logo_oscuro.png">
 </div>
 
 <!-- PASO 1 -->
@@ -84,37 +94,18 @@ button{
 <h3>Servicio de inspección de autotanques</h3>
 
 <p>
-Incluye:<br>
-✔ Certificación de calibración líquida.<br>
-✔ Certificación de inspección técnica por medición de espesores.<br>
-✔ Certificación de normas de seguridad para el Transporte, Almacenamiento y Manejo de Materiales Peligrosos bajo la NTE INEN 2266.<br>
-✔ Certificación para el Manejo, Almacenamiento, Transporte y Expendio en los Centros de Distribución de los Combustibles Líquidos bajo la NTE INEN 2251.<br>
-✔ Provisión de varilla hexagonal de bronce graduada.
+✔ Certificación de calibración líquida<br>
+✔ Medición de espesores<br>
+✔ Certificación NTE INEN 2266<br>
+✔ Certificación NTE INEN 2251<br>
+✔ Varilla de bronce graduada
 </p>
 
-<h3>Seleccione la capacidad del autotanque</h3>
-
-<div class="opcion" onclick="seleccionar(this,250)">
-0 - 2000 galones → $250
-</div>
-
-<div class="opcion" onclick="seleccionar(this,280)">
-2001 - 4000 galones → $280
-</div>
-
-<div class="opcion" onclick="seleccionar(this,330)">
-4001 - 6000 galones → $330
-</div>
-
-<div class="opcion" onclick="seleccionar(this,350)">
-6001 - 8000 galones → $350
-</div>
-
-<div class="opcion" onclick="seleccionar(this,380)">
-8001 - 10000 galones → $380
-</div>
+<div id="lista"></div>
 
 </div>
+
+<div id="resumenPaso1" class="resumen"></div>
 
 <button class="btn" onclick="validar()">Siguiente</button>
 
@@ -124,28 +115,16 @@ Incluye:<br>
 <div id="step2" class="step">
 
 <div class="card">
-
 <h3>Datos del cliente</h3>
-
 <input id="cliente" placeholder="Razón Social">
 <input id="ruc" placeholder="RUC">
 <input id="contacto" placeholder="Contacto">
 <input id="telefono" placeholder="Teléfono">
-
 </div>
-
-<div id="resumen" class="resumen"></div>
-
-<button class="back" onclick="next(1)">Atrás</button>
-<button class="btn" onclick="finalizar()">Finalizar</button>
-
-</div>
-
-<!-- FINAL -->
-<div id="step3" class="step">
 
 <div id="resumenFinal" class="resumen"></div>
 
+<button class="back" onclick="next(1)">Atrás</button>
 <button class="btn" onclick="generarPDF()">📄 PDF</button>
 <button class="btn" onclick="enviarWhatsApp()">📲 WhatsApp</button>
 
@@ -155,21 +134,83 @@ Incluye:<br>
 
 <script>
 
-let precio=0;
-let capacidadTexto="";
+/* RANGOS */
+const rangos = [
+["0-2000 galones",250],
+["2001-4000 galones",280],
+["4001-6000 galones",330],
+["6001-8000 galones",350],
+["8001-10000 galones",380]
+];
 
-/* SELECCION */
-function seleccionar(el,prec){
-document.querySelectorAll(".opcion").forEach(o=>o.classList.remove("selected"));
-el.classList.add("selected");
+const lista=document.getElementById("lista");
 
-precio=prec;
-capacidadTexto=el.innerText;
+/* GENERAR ITEMS */
+rangos.forEach((r,i)=>{
+lista.innerHTML+=`
+<div class="item">
+<b>${r[0]}</b> → $${r[1]}
+
+<div class="cantidad">
+<button onclick="cambiar(${i},-1)">-</button>
+<input id="cant${i}" value="0">
+<button onclick="cambiar(${i},1)">+</button>
+</div>
+</div>
+`;
+});
+
+/* CAMBIAR CANTIDAD */
+function cambiar(i,val){
+let input=document.getElementById("cant"+i);
+let v=parseInt(input.value)||0;
+v+=val;
+if(v<0)v=0;
+input.value=v;
+actualizar();
+}
+
+/* ACTUALIZAR RESUMEN */
+function actualizar(){
+
+let total=0;
+let texto="";
+
+rangos.forEach((r,i)=>{
+let c=parseInt(document.getElementById("cant"+i).value)||0;
+if(c>0){
+let subtotal=c*r[1];
+total+=subtotal;
+texto+=`• ${r[0]} x${c} = $${subtotal}\n`;
+}
+});
+
+if(texto==="") texto="No hay selección";
+
+let resumen=`
+RESUMEN:
+
+${texto}
+
+TOTAL: $${total}
+
+NOTA IMPORTANTE:
+El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.
+El cliente debe movilizar el autotanque.
+`;
+
+document.getElementById("resumenPaso1").innerText=resumen;
+document.getElementById("resumenFinal").innerText=resumen;
 }
 
 /* VALIDAR */
 function validar(){
-if(precio==0) return alert("Selecciona una capacidad");
+let valido=false;
+rangos.forEach((r,i)=>{
+if(parseInt(document.getElementById("cant"+i).value)>0) valido=true;
+});
+if(!valido) return alert("Selecciona al menos un servicio");
+
 next(2);
 }
 
@@ -179,53 +220,12 @@ document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
 document.getElementById("step"+n).classList.add("active");
 }
 
-/* FINAL */
-function finalizar(){
-
-let cliente=document.getElementById("cliente").value;
-let ruc=document.getElementById("ruc").value;
-let contacto=document.getElementById("contacto").value;
-let telefono=document.getElementById("telefono").value;
-
-let texto=`
-COTIZACIÓN AUTOTANQUE
-
-Cliente: ${cliente}
-RUC: ${ruc}
-Contacto: ${contacto}
-Teléfono: ${telefono}
-
-SERVICIO:
-INSPECCIÓN DE AUTOTANQUES
-
-INCLUYE:
-- Certificación de calibración líquida
-- Inspección técnica por medición de espesores
-- Certificación NTE INEN 2266
-- Certificación NTE INEN 2251
-- Varilla hexagonal de bronce graduada
-
-CAPACIDAD:
-${capacidadTexto}
-
-TOTAL: $${precio}
-
-NOTA IMPORTANTE:
-El servicio se realizará en el patio de calibraciones de PETROCHECK, ubicado en el sector El Beaterio, Quito - Ecuador.
-El cliente será responsable de movilizar el autotanque hasta nuestras instalaciones.
-`;
-
-document.getElementById("resumenFinal").innerText=texto;
-
-next(3);
-}
-
 /* PDF */
 function generarPDF(){
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 doc.text(document.getElementById("resumenFinal").innerText,10,10);
-doc.save("cotizacion_autotanque.pdf");
+doc.save("cotizacion.pdf");
 }
 
 /* WHATSAPP */
