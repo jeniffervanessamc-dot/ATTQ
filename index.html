@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Cotizador Autotanques Petrocheck</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:url('https://petrocheck.com.ec/wp-content/uploads/2021/11/calidad-home.jpg') no-repeat center/cover;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.65);
+  z-index:-1;
+}
+
+.container{max-width:900px;margin:auto;padding:25px;}
+
+.header{text-align:center;margin-bottom:20px;}
+.header img{height:70px;}
+
+.card{
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.25);
+}
+
+h3{margin-top:0}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin-top:12px;
+  font-weight:bold;
+}
+
+.btn{background:#f97316;color:white;}
+
+.total-box{
+  position:fixed;
+  top:15px;
+  right:15px;
+  background:white;
+  padding:12px 18px;
+  border-radius:10px;
+  font-weight:bold;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.resumen{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  margin-top:20px;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<img src="https://petrocheck.com.ec/wp-content/uploads/2021/09/logo_oscuro.png">
+</div>
+
+<div class="total-box">
+Total: $<span id="total">0.00</span>
+</div>
+
+<div class="card">
+
+<h3>Servicio de inspección de autotanques</h3>
+
+<p>
+Incluye:<br>
+✔ Certificación de calibración líquida<br>
+✔ Inspección técnica por medición de espesores<br>
+✔ Certificación NTE INEN 2266<br>
+✔ Certificación NTE INEN 2251<br>
+✔ Varilla hexagonal de bronce graduada
+</p>
+
+<label>Capacidad del autotanque (galones)</label>
+<input type="number" id="capacidad" placeholder="Ej: 3000" oninput="calcularTotal()">
+
+<label>Ubicación</label>
+<input id="ubicacion" placeholder="Ej: Quito, Ambato, Guayaquil" oninput="calcularTotal()">
+
+<label>Cliente</label>
+<input id="cliente" placeholder="Razón Social">
+
+<label>RUC</label>
+<input id="ruc" placeholder="RUC">
+
+</div>
+
+<div id="resumen" class="resumen"></div>
+
+<button class="btn" onclick="generarPDF()">📄 Generar PDF</button>
+<button class="btn" onclick="enviarWhatsApp()">📲 Enviar por WhatsApp</button>
+
+</div>
+
+<script>
+
+/* PRECIOS POR CAPACIDAD */
+function obtenerPrecio(cap){
+cap = parseFloat(cap) || 0;
+
+if(cap <= 2000) return 250;
+if(cap <= 4000) return 280;
+if(cap <= 6000) return 330;
+if(cap <= 8000) return 350;
+if(cap <= 10000) return 380;
+
+return 400;
+}
+
+/* LOGÍSTICA */
+function calcularLogistica(u){
+u = (u || "").toLowerCase();
+
+if(u.includes("quito") || u.includes("cayambe") || u.includes("otavalo")) return 131;
+if(u.includes("ambato") || u.includes("latacunga")) return 140;
+
+return 147;
+}
+
+/* CALCULO */
+function calcularTotal(){
+
+let cap = document.getElementById("capacidad").value;
+let ubic = document.getElementById("ubicacion").value;
+let cliente = document.getElementById("cliente").value;
+let ruc = document.getElementById("ruc").value;
+
+let precio = obtenerPrecio(cap);
+let log = calcularLogistica(ubic);
+let total = precio + log;
+
+document.getElementById("total").innerText = total.toFixed(2);
+
+document.getElementById("resumen").innerHTML = `
+<h3>COTIZACIÓN</h3>
+
+<b>Cliente:</b> ${cliente || "-"}<br>
+<b>RUC:</b> ${ruc || "-"}<br>
+<b>Ubicación:</b> ${ubic || "-"}<br><br>
+
+<b>Servicio:</b><br>
+Inspección de Autotanque<br><br>
+
+<b>Capacidad:</b> ${cap || 0} galones<br>
+<b>Precio base:</b> $${precio}<br>
+<b>Logística:</b> $${log}<br><br>
+
+<h2>Total: $${total.toFixed(2)}</h2>
+`;
+}
+
+/* PDF PROFESIONAL */
+function generarPDF(){
+const {jsPDF} = window.jspdf;
+let doc = new jsPDF();
+
+let texto = document.getElementById("resumen").innerText;
+
+doc.setFontSize(16);
+doc.text("PETROCHECK SERVICES CIA. LTDA.", 10, 10);
+
+doc.setFontSize(12);
+doc.text(texto, 10, 20);
+
+doc.save("cotizacion_autotanque.pdf");
+}
+
+/* WHATSAPP */
+function enviarWhatsApp(){
+let txt = document.getElementById("resumen").innerText;
+window.open("https://wa.me/593999300398?text="+encodeURIComponent(txt));
+}
+
+</script>
+
+</body>
+</html>
