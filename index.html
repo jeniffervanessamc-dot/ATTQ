@@ -21,7 +21,6 @@ body::before{
 }
 
 .container{max-width:950px;margin:auto;padding:25px;}
-
 .header{text-align:center;margin-bottom:20px;}
 .header img{height:70px;}
 
@@ -30,8 +29,9 @@ body::before{
 
 .card{
   background:white;
-  padding:25px;
+  padding:30px;
   border-radius:12px;
+  margin-bottom:20px;
 }
 
 .item{
@@ -44,26 +44,30 @@ body::before{
   margin-top:10px;
 }
 
-.info{max-width:65%;}
+.info{max-width:60%;}
 
 .cantidad{
   display:flex;
   align-items:center;
-  gap:5px;
+  gap:8px;
 }
 .cantidad button{
-  width:30px;height:30px;
-  background:#f97316;color:white;border:none;border-radius:5px;
+  width:32px;height:32px;
+  background:#f97316;color:white;border:none;border-radius:6px;
 }
 .cantidad input{
-  width:50px;
+  width:55px;
   text-align:center;
+}
+
+.form-group{
+  margin-bottom:15px;
 }
 
 .form-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
+  gap:15px;
 }
 
 input{
@@ -73,9 +77,7 @@ input{
   width:100%;
 }
 
-.error{
-  border:2px solid red;
-}
+.error{border:2px solid red;}
 
 button{
   width:100%;
@@ -83,7 +85,7 @@ button{
   border:none;
   border-radius:8px;
   cursor:pointer;
-  margin-top:12px;
+  margin-top:10px;
   font-weight:bold;
 }
 
@@ -92,9 +94,8 @@ button{
 
 .resumen{
   background:white;
-  padding:20px;
+  padding:25px;
   border-radius:10px;
-  margin-top:20px;
   border-left:6px solid #f97316;
 }
 
@@ -118,7 +119,6 @@ button{
 <div id="step1" class="step active">
 
 <div class="card">
-
 <h3>Servicio de inspección de autotanques</h3>
 
 <p>
@@ -130,7 +130,6 @@ button{
 </p>
 
 <div id="lista"></div>
-
 </div>
 
 <div id="resumenPaso1" class="resumen"></div>
@@ -146,11 +145,32 @@ button{
 <h3>Datos del cliente</h3>
 
 <div class="form-grid">
-<input id="cliente" placeholder="Razón Social *">
-<input id="ruc" placeholder="RUC *">
-<input id="correo" placeholder="Correo electrónico *">
-<input id="telefono" placeholder="Teléfono *">
-<input id="contacto" placeholder="Persona de contacto *" style="grid-column:span 2;">
+
+<div class="form-group">
+<label>Razón Social *</label>
+<input id="cliente">
+</div>
+
+<div class="form-group">
+<label>RUC *</label>
+<input id="ruc">
+</div>
+
+<div class="form-group">
+<label>Correo electrónico *</label>
+<input id="correo">
+</div>
+
+<div class="form-group">
+<label>Teléfono *</label>
+<input id="telefono">
+</div>
+
+<div class="form-group" style="grid-column:span 2;">
+<label>Persona de contacto *</label>
+<input id="contacto">
+</div>
+
 </div>
 
 </div>
@@ -158,7 +178,7 @@ button{
 <div id="resumenFinal" class="resumen"></div>
 
 <button class="back" onclick="next(1)">Atrás</button>
-<button class="btn" onclick="validarDatos()">Finalizar</button>
+<button class="btn" onclick="finalizar()">Finalizar</button>
 
 </div>
 
@@ -177,7 +197,6 @@ const rangos = [
 
 const lista=document.getElementById("lista");
 
-/* GENERAR ITEMS */
 rangos.forEach((r,i)=>{
 lista.innerHTML+=`
 <div class="item">
@@ -185,17 +204,14 @@ lista.innerHTML+=`
     <b>${r[0]}</b><br>
     Precio: $${r[1]}
   </div>
-
   <div class="cantidad">
     <button onclick="cambiar(${i},-1)">-</button>
     <input id="cant${i}" value="0">
     <button onclick="cambiar(${i},1)">+</button>
   </div>
-</div>
-`;
+</div>`;
 });
 
-/* CAMBIAR */
 function cambiar(i,val){
 let input=document.getElementById("cant"+i);
 let v=parseInt(input.value)||0;
@@ -205,25 +221,17 @@ input.value=v;
 actualizar();
 }
 
-/* ACTUALIZAR */
 function actualizar(){
-
 let total=0;
 let html="<h3>Resumen</h3>";
 
 rangos.forEach((r,i)=>{
 let c=parseInt(document.getElementById("cant"+i).value)||0;
-
 if(c>0){
 let subtotal=c*r[1];
 total+=subtotal;
-
-html+=`
-<div style="display:flex;justify-content:space-between">
-<span>${r[0]} x${c}</span>
-<span>$${subtotal}</span>
-</div>
-`;
+html+=`<div style="display:flex;justify-content:space-between">
+<span>${r[0]} x${c}</span><span>$${subtotal}</span></div>`;
 }
 });
 
@@ -236,30 +244,26 @@ html+=`<hr><div class="total">TOTAL: $${total}</div>`;
 html+=`
 <div style="margin-top:15px;">
   <div style="color:red;font-weight:bold;">NOTA IMPORTANTE:</div>
-  <ul style="margin-top:5px;color:black;">
-    <li>El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.</li>
-    <li>El cliente será responsable de movilizar el autotanque.</li>
+  <ul style="color:black;">
+    <li>El servicio se realizará en el patio de calibraciones de PETROCHECK (El Beaterio, Quito).</li>
+    <li>El cliente debe movilizar el autotanque.</li>
   </ul>
-</div>
-`;
+</div>`;
 
 document.getElementById("resumenPaso1").innerHTML=html;
 document.getElementById("resumenFinal").innerHTML=html;
 }
 
-/* VALIDAR PASO 1 */
 function validar(){
-let valido=false;
+let ok=false;
 rangos.forEach((r,i)=>{
-if(parseInt(document.getElementById("cant"+i).value)>0) valido=true;
+if(parseInt(document.getElementById("cant"+i).value)>0) ok=true;
 });
-if(!valido) return alert("Selecciona al menos un servicio");
-
+if(!ok) return alert("Selecciona al menos un servicio");
 next(2);
 }
 
-/* VALIDAR DATOS */
-function validarDatos(){
+function finalizar(){
 
 let campos=["cliente","ruc","correo","telefono","contacto"];
 let ok=true;
@@ -267,38 +271,28 @@ let ok=true;
 campos.forEach(id=>{
 let el=document.getElementById(id);
 el.classList.remove("error");
-
-if(!el.value){
-el.classList.add("error");
-ok=false;
-}
+if(!el.value){el.classList.add("error"); ok=false;}
 });
 
-/* validar correo */
-let correo=document.getElementById("correo");
-let regexCorreo=/^\S+@\S+\.\S+$/;
-if(!regexCorreo.test(correo.value)){
-correo.classList.add("error");
-ok=false;
-}
-
-/* validar telefono */
-let telefono=document.getElementById("telefono");
-let regexTel=/^[0-9]+$/;
-if(!regexTel.test(telefono.value)){
-telefono.classList.add("error");
-ok=false;
-}
+if(!/^\S+@\S+\.\S+$/.test(correo.value)){ok=false;}
+if(!/^[0-9]+$/.test(telefono.value)){ok=false;}
 
 if(!ok){
-alert("Completa correctamente todos los campos");
+alert("Completa correctamente los datos");
 return;
 }
 
-alert("Cotización lista ✅");
+/* PDF */
+const {jsPDF}=window.jspdf;
+let doc=new jsPDF();
+doc.text(document.getElementById("resumenFinal").innerText,10,10);
+doc.save("cotizacion.pdf");
+
+/* WHATSAPP */
+let txt=document.getElementById("resumenFinal").innerText;
+window.open("https://wa.me/593999300398?text="+encodeURIComponent(txt));
 }
 
-/* CAMBIO */
 function next(n){
 document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
 document.getElementById("step"+n).classList.add("active");
