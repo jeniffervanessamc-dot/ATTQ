@@ -60,6 +60,23 @@ body::before{
   text-align:center;
 }
 
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+input{
+  padding:12px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  width:100%;
+}
+
+.error{
+  border:2px solid red;
+}
+
 button{
   width:100%;
   padding:14px;
@@ -127,17 +144,21 @@ button{
 
 <div class="card">
 <h3>Datos del cliente</h3>
-<input id="cliente" placeholder="Razón Social">
-<input id="ruc" placeholder="RUC">
-<input id="contacto" placeholder="Contacto">
-<input id="telefono" placeholder="Teléfono">
+
+<div class="form-grid">
+<input id="cliente" placeholder="Razón Social *">
+<input id="ruc" placeholder="RUC *">
+<input id="correo" placeholder="Correo electrónico *">
+<input id="telefono" placeholder="Teléfono *">
+<input id="contacto" placeholder="Persona de contacto *" style="grid-column:span 2;">
+</div>
+
 </div>
 
 <div id="resumenFinal" class="resumen"></div>
 
 <button class="back" onclick="next(1)">Atrás</button>
-<button class="btn" onclick="generarPDF()">📄 PDF</button>
-<button class="btn" onclick="enviarWhatsApp()">📲 WhatsApp</button>
+<button class="btn" onclick="validarDatos()">Finalizar</button>
 
 </div>
 
@@ -212,13 +233,12 @@ html+="<p>No hay selección</p>";
 html+=`<hr><div class="total">TOTAL: $${total}</div>`;
 }
 
-/* NOTA */
 html+=`
 <div style="margin-top:15px;">
   <div style="color:red;font-weight:bold;">NOTA IMPORTANTE:</div>
   <ul style="margin-top:5px;color:black;">
     <li>El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.</li>
-    <li>El cliente será responsable de movilizar el autotanque hasta nuestras instalaciones.</li>
+    <li>El cliente será responsable de movilizar el autotanque.</li>
   </ul>
 </div>
 `;
@@ -227,7 +247,7 @@ document.getElementById("resumenPaso1").innerHTML=html;
 document.getElementById("resumenFinal").innerHTML=html;
 }
 
-/* VALIDAR */
+/* VALIDAR PASO 1 */
 function validar(){
 let valido=false;
 rangos.forEach((r,i)=>{
@@ -238,24 +258,50 @@ if(!valido) return alert("Selecciona al menos un servicio");
 next(2);
 }
 
+/* VALIDAR DATOS */
+function validarDatos(){
+
+let campos=["cliente","ruc","correo","telefono","contacto"];
+let ok=true;
+
+campos.forEach(id=>{
+let el=document.getElementById(id);
+el.classList.remove("error");
+
+if(!el.value){
+el.classList.add("error");
+ok=false;
+}
+});
+
+/* validar correo */
+let correo=document.getElementById("correo");
+let regexCorreo=/^\S+@\S+\.\S+$/;
+if(!regexCorreo.test(correo.value)){
+correo.classList.add("error");
+ok=false;
+}
+
+/* validar telefono */
+let telefono=document.getElementById("telefono");
+let regexTel=/^[0-9]+$/;
+if(!regexTel.test(telefono.value)){
+telefono.classList.add("error");
+ok=false;
+}
+
+if(!ok){
+alert("Completa correctamente todos los campos");
+return;
+}
+
+alert("Cotización lista ✅");
+}
+
 /* CAMBIO */
 function next(n){
 document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
 document.getElementById("step"+n).classList.add("active");
-}
-
-/* PDF */
-function generarPDF(){
-const {jsPDF}=window.jspdf;
-let doc=new jsPDF();
-doc.text(document.getElementById("resumenFinal").innerText,10,10);
-doc.save("cotizacion.pdf");
-}
-
-/* WHATSAPP */
-function enviarWhatsApp(){
-let txt=document.getElementById("resumenFinal").innerText;
-window.open("https://wa.me/593999300398?text="+encodeURIComponent(txt));
 }
 
 </script>
