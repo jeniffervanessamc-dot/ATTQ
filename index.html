@@ -20,7 +20,7 @@ body::before{
   z-index:-1;
 }
 
-.container{max-width:900px;margin:auto;padding:25px;}
+.container{max-width:950px;margin:auto;padding:25px;}
 
 .header{text-align:center;margin-bottom:20px;}
 .header img{height:70px;}
@@ -35,24 +35,31 @@ body::before{
 }
 
 .item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   border:1px solid #ddd;
   padding:15px;
   border-radius:10px;
   margin-top:10px;
 }
 
+.info{
+  max-width:65%;
+}
+
 .cantidad{
   display:flex;
+  align-items:center;
   gap:5px;
-  margin-top:10px;
 }
 .cantidad button{
   width:30px;height:30px;
   background:#f97316;color:white;border:none;border-radius:5px;
 }
 
-input{
-  width:60px;
+.cantidad input{
+  width:50px;
   text-align:center;
 }
 
@@ -74,6 +81,23 @@ button{
   padding:20px;
   border-radius:10px;
   margin-top:20px;
+  border-left:6px solid #f97316;
+}
+
+.resumen h3{
+  margin-top:0;
+}
+
+.total{
+  font-size:22px;
+  color:#f97316;
+  font-weight:bold;
+}
+
+.nota{
+  color:red;
+  font-weight:bold;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -149,18 +173,21 @@ const lista=document.getElementById("lista");
 rangos.forEach((r,i)=>{
 lista.innerHTML+=`
 <div class="item">
-<b>${r[0]}</b> → $${r[1]}
+  <div class="info">
+    <b>${r[0]}</b><br>
+    Precio: $${r[1]}
+  </div>
 
-<div class="cantidad">
-<button onclick="cambiar(${i},-1)">-</button>
-<input id="cant${i}" value="0">
-<button onclick="cambiar(${i},1)">+</button>
-</div>
+  <div class="cantidad">
+    <button onclick="cambiar(${i},-1)">-</button>
+    <input id="cant${i}" value="0">
+    <button onclick="cambiar(${i},1)">+</button>
+  </div>
 </div>
 `;
 });
 
-/* CAMBIAR CANTIDAD */
+/* CAMBIAR */
 function cambiar(i,val){
 let input=document.getElementById("cant"+i);
 let v=parseInt(input.value)||0;
@@ -170,37 +197,44 @@ input.value=v;
 actualizar();
 }
 
-/* ACTUALIZAR RESUMEN */
+/* ACTUALIZAR */
 function actualizar(){
 
 let total=0;
-let texto="";
+let html="<h3>Resumen</h3>";
 
 rangos.forEach((r,i)=>{
 let c=parseInt(document.getElementById("cant"+i).value)||0;
+
 if(c>0){
 let subtotal=c*r[1];
 total+=subtotal;
-texto+=`• ${r[0]} x${c} = $${subtotal}\n`;
+
+html+=`
+<div style="display:flex;justify-content:space-between">
+<span>${r[0]} x${c}</span>
+<span>$${subtotal}</span>
+</div>
+`;
 }
 });
 
-if(texto==="") texto="No hay selección";
+if(total===0){
+html+="<p>No hay selección</p>";
+}else{
+html+=`<hr><div class="total">TOTAL: $${total}</div>`;
+}
 
-let resumen=`
-RESUMEN:
-
-${texto}
-
-TOTAL: $${total}
-
-NOTA IMPORTANTE:
-El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.
-El cliente debe movilizar el autotanque.
+html+=`
+<div class="nota">
+NOTA IMPORTANTE:<br>
+El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.<br>
+El cliente es responsable de movilizar el autotanque.
+</div>
 `;
 
-document.getElementById("resumenPaso1").innerText=resumen;
-document.getElementById("resumenFinal").innerText=resumen;
+document.getElementById("resumenPaso1").innerHTML=html;
+document.getElementById("resumenFinal").innerHTML=html;
 }
 
 /* VALIDAR */
