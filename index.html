@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Cotizador Mes del Autotanque Petrocheck</title>
+<title>Cotizador Autotanques Petrocheck</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -20,7 +20,7 @@ body::before{
   z-index:-1;
 }
 
-.container{max-width:950px;margin:auto;padding:25px;}
+.container{max-width:900px;margin:auto;padding:25px;}
 .header{text-align:center;margin-bottom:20px;}
 .header img{height:70px;}
 
@@ -44,8 +44,6 @@ body::before{
   margin-top:10px;
 }
 
-.info{max-width:60%;}
-
 .cantidad{
   display:flex;
   align-items:center;
@@ -61,13 +59,13 @@ body::before{
 }
 
 .form-group{
-  margin-bottom:15px;
+  margin-bottom:18px;
 }
 
-.form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
+label{
+  font-weight:bold;
+  display:block;
+  margin-bottom:5px;
 }
 
 input{
@@ -144,8 +142,6 @@ button{
 <div class="card">
 <h3>Datos del cliente</h3>
 
-<div class="form-grid">
-
 <div class="form-group">
 <label>Razón Social *</label>
 <input id="cliente">
@@ -166,11 +162,9 @@ button{
 <input id="telefono">
 </div>
 
-<div class="form-group" style="grid-column:span 2;">
+<div class="form-group">
 <label>Persona de contacto *</label>
 <input id="contacto">
-</div>
-
 </div>
 
 </div>
@@ -178,7 +172,8 @@ button{
 <div id="resumenFinal" class="resumen"></div>
 
 <button class="back" onclick="next(1)">Atrás</button>
-<button class="btn" onclick="finalizar()">Finalizar</button>
+<button class="btn" onclick="generarPDF()">📄 Generar PDF</button>
+<button class="btn" onclick="enviarWhatsApp()">📲 Enviar WhatsApp</button>
 
 </div>
 
@@ -193,7 +188,7 @@ const rangos = [
 ["4001-6000 galones",330],
 ["6001-8000 galones",350],
 ["8001-10000 galones",380],
-["10001-12000 galones",410],
+["10001-12000 galones",410]
 ];
 
 const lista=document.getElementById("lista");
@@ -201,7 +196,7 @@ const lista=document.getElementById("lista");
 rangos.forEach((r,i)=>{
 lista.innerHTML+=`
 <div class="item">
-  <div class="info">
+  <div>
     <b>${r[0]}</b><br>
     Precio: $${r[1]}
   </div>
@@ -223,32 +218,29 @@ actualizar();
 }
 
 function actualizar(){
+
 let total=0;
-let html="<h3>Resumen</h3>";
+let detalle="";
 
 rangos.forEach((r,i)=>{
 let c=parseInt(document.getElementById("cant"+i).value)||0;
 if(c>0){
-let subtotal=c*r[1];
-total+=subtotal;
-html+=`<div style="display:flex;justify-content:space-between">
-<span>${r[0]} x${c}</span><span>$${subtotal}</span></div>`;
+let sub=c*r[1];
+total+=sub;
+detalle+=`${r[0]} x${c} = $${sub}\n`;
 }
 });
 
-if(total===0){
-html+="<p>No hay selección</p>";
-}else{
-html+=`<hr><div class="total">TOTAL: $${total}</div>`;
-}
+if(detalle==="") detalle="No hay selección";
 
-html+=`
-<div style="margin-top:15px;">
-  <div style="color:red;font-weight:bold;">NOTA IMPORTANTE:</div>
-  <ul style="color:black;">
-    <li>El servicio se realizará en el patio de calibraciones de PETROCHECK (El Beaterio, Quito).</li>
-    <li>El cliente debe movilizar el autotanque.</li>
-  </ul>
+let html=`<h3>Resumen</h3><pre>${detalle}</pre><div class="total">TOTAL: $${total}</div>
+
+<div style="margin-top:10px;">
+<b style="color:red;">NOTA IMPORTANTE:</b>
+<ul>
+<li>El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito.</li>
+<li>El cliente debe movilizar el autotanque.</li>
+</ul>
 </div>`;
 
 document.getElementById("resumenPaso1").innerHTML=html;
@@ -264,33 +256,46 @@ if(!ok) return alert("Selecciona al menos un servicio");
 next(2);
 }
 
-function finalizar(){
-
-let campos=["cliente","ruc","correo","telefono","contacto"];
-let ok=true;
-
-campos.forEach(id=>{
-let el=document.getElementById(id);
-el.classList.remove("error");
-if(!el.value){el.classList.add("error"); ok=false;}
-});
-
-if(!/^\S+@\S+\.\S+$/.test(correo.value)){ok=false;}
-if(!/^[0-9]+$/.test(telefono.value)){ok=false;}
-
-if(!ok){
-alert("Completa correctamente los datos");
-return;
+/* VALIDAR DATOS */
+function validarDatos(){
+if(!cliente.value || !ruc.value || !correo.value || !telefono.value || !contacto.value){
+alert("Completa todos los datos");
+return false;
+}
+return true;
 }
 
 /* PDF */
+function generarPDF(){
+if(!validarDatos()) return;
+
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
-doc.text(document.getElementById("resumenFinal").innerText,10,10);
-doc.save("cotizacion.pdf");
+
+let y=10;
+
+doc.setFontSize(16);
+doc.text("COTIZACIÓN PETROCHECK",10,y);
+y+=10;
+
+doc.setFontSize(11);
+doc.text(`Cliente: ${cliente.value}`,10,y); y+=6;
+doc.text(`RUC: ${ruc.value}`,10,y); y+=6;
+doc.text(`Correo: ${correo.value}`,10,y); y+=6;
+doc.text(`Teléfono: ${telefono.value}`,10,y); y+=6;
+doc.text(`Contacto: ${contacto.value}`,10,y); y+=10;
+
+doc.text(document.getElementById("resumenFinal").innerText,10,y);
+
+doc.save("cotizacion_autotanque.pdf");
+}
 
 /* WHATSAPP */
-let txt=document.getElementById("resumenFinal").innerText;
+function enviarWhatsApp(){
+if(!validarDatos()) return;
+
+let txt=`COTIZACIÓN PETROCHECK\n\nCliente: ${cliente.value}\nRUC: ${ruc.value}\nCorreo: ${correo.value}\nTeléfono: ${telefono.value}\n\n${document.getElementById("resumenFinal").innerText}`;
+
 window.open("https://wa.me/593999300398?text="+encodeURIComponent(txt));
 }
 
