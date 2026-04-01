@@ -80,25 +80,37 @@ button{
 <div id="step1" class="step active">
 
 <div class="card">
+
+<h3>Servicio de inspección de autotanques</h3>
+
+<p>
+Incluye:<br>
+✔ Certificación de calibración líquida.<br>
+✔ Certificación de inspección técnica por medición de espesores.<br>
+✔ Certificación de normas de seguridad para el Transporte, Almacenamiento y Manejo de Materiales Peligrosos bajo la NTE INEN 2266.<br>
+✔ Certificación para el Manejo, Almacenamiento, Transporte y Expendio en los Centros de Distribución de los Combustibles Líquidos bajo la NTE INEN 2251.<br>
+✔ Provisión de varilla hexagonal de bronce graduada.
+</p>
+
 <h3>Seleccione la capacidad del autotanque</h3>
 
-<div class="opcion" onclick="seleccionar(this,2000,250)">
+<div class="opcion" onclick="seleccionar(this,250)">
 0 - 2000 galones → $250
 </div>
 
-<div class="opcion" onclick="seleccionar(this,4000,280)">
+<div class="opcion" onclick="seleccionar(this,280)">
 2001 - 4000 galones → $280
 </div>
 
-<div class="opcion" onclick="seleccionar(this,6000,330)">
+<div class="opcion" onclick="seleccionar(this,330)">
 4001 - 6000 galones → $330
 </div>
 
-<div class="opcion" onclick="seleccionar(this,8000,350)">
+<div class="opcion" onclick="seleccionar(this,350)">
 6001 - 8000 galones → $350
 </div>
 
-<div class="opcion" onclick="seleccionar(this,10000,380)">
+<div class="opcion" onclick="seleccionar(this,380)">
 8001 - 10000 galones → $380
 </div>
 
@@ -147,7 +159,7 @@ let precio=0;
 let capacidadTexto="";
 
 /* SELECCION */
-function seleccionar(el,cap,prec){
+function seleccionar(el,prec){
 document.querySelectorAll(".opcion").forEach(o=>o.classList.remove("selected"));
 el.classList.add("selected");
 
@@ -161,7 +173,7 @@ if(precio==0) return alert("Selecciona una capacidad");
 next(2);
 }
 
-/* CAMBIO DE PASO */
+/* CAMBIO */
 function next(n){
 document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
 document.getElementById("step"+n).classList.add("active");
@@ -183,17 +195,17 @@ RUC: ${ruc}
 Contacto: ${contacto}
 Teléfono: ${telefono}
 
-Servicio:
-Inspección de Autotanque
+SERVICIO:
+INSPECCIÓN DE AUTOTANQUES
 
-Incluye:
-- Calibración líquida
-- Medición de espesores
+INCLUYE:
+- Certificación de calibración líquida
+- Inspección técnica por medición de espesores
 - Certificación NTE INEN 2266
 - Certificación NTE INEN 2251
-- Varilla de bronce graduada
+- Varilla hexagonal de bronce graduada
 
-Capacidad:
+CAPACIDAD:
 ${capacidadTexto}
 
 TOTAL: $${precio}
