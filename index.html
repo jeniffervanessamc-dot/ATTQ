@@ -44,9 +44,7 @@ body::before{
   margin-top:10px;
 }
 
-.info{
-  max-width:65%;
-}
+.info{max-width:65%;}
 
 .cantidad{
   display:flex;
@@ -57,7 +55,6 @@ body::before{
   width:30px;height:30px;
   background:#f97316;color:white;border:none;border-radius:5px;
 }
-
 .cantidad input{
   width:50px;
   text-align:center;
@@ -84,20 +81,10 @@ button{
   border-left:6px solid #f97316;
 }
 
-.resumen h3{
-  margin-top:0;
-}
-
 .total{
   font-size:22px;
   color:#f97316;
   font-weight:bold;
-}
-
-.nota{
-  color:red;
-  font-weight:bold;
-  margin-top:10px;
 }
 </style>
 </head>
@@ -225,11 +212,14 @@ html+="<p>No hay selección</p>";
 html+=`<hr><div class="total">TOTAL: $${total}</div>`;
 }
 
+/* NOTA */
 html+=`
-<div class="nota">
-NOTA IMPORTANTE:<br>
-El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.<br>
-El cliente es responsable de movilizar el autotanque.
+<div style="margin-top:15px;">
+  <div style="color:red;font-weight:bold;">NOTA IMPORTANTE:</div>
+  <ul style="margin-top:5px;color:black;">
+    <li>El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito - Ecuador.</li>
+    <li>El cliente será responsable de movilizar el autotanque hasta nuestras instalaciones.</li>
+  </ul>
 </div>
 `;
 
