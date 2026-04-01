@@ -64,8 +64,6 @@ body::before{
 
 label{
   font-weight:bold;
-  display:block;
-  margin-bottom:5px;
 }
 
 input{
@@ -74,8 +72,6 @@ input{
   border:1px solid #ccc;
   width:100%;
 }
-
-.error{border:2px solid red;}
 
 button{
   width:100%;
@@ -153,7 +149,7 @@ button{
 </div>
 
 <div class="form-group">
-<label>Correo electrónico *</label>
+<label>Correo *</label>
 <input id="correo">
 </div>
 
@@ -163,7 +159,7 @@ button{
 </div>
 
 <div class="form-group">
-<label>Persona de contacto *</label>
+<label>Contacto *</label>
 <input id="contacto">
 </div>
 
@@ -217,8 +213,7 @@ input.value=v;
 actualizar();
 }
 
-function actualizar(){
-
+function obtenerDetalle(){
 let total=0;
 let detalle="";
 
@@ -231,32 +226,31 @@ detalle+=`${r[0]} x${c} = $${sub}\n`;
 }
 });
 
-if(detalle==="") detalle="No hay selección";
+return {detalle,total};
+}
 
-let html=`<h3>Resumen</h3><pre>${detalle}</pre><div class="total">TOTAL: $${total}</div>
+function actualizar(){
+let data=obtenerDetalle();
 
-<div style="margin-top:10px;">
+let html=`<h3>Resumen</h3><pre>${data.detalle || "No hay selección"}</pre>
+<div class="total">TOTAL: $${data.total}</div>
+
 <b style="color:red;">NOTA IMPORTANTE:</b>
 <ul>
 <li>El servicio se realizará en el patio de calibraciones de PETROCHECK, sector El Beaterio, Quito.</li>
 <li>El cliente debe movilizar el autotanque.</li>
-</ul>
-</div>`;
+</ul>`;
 
 document.getElementById("resumenPaso1").innerHTML=html;
 document.getElementById("resumenFinal").innerHTML=html;
 }
 
 function validar(){
-let ok=false;
-rangos.forEach((r,i)=>{
-if(parseInt(document.getElementById("cant"+i).value)>0) ok=true;
-});
-if(!ok) return alert("Selecciona al menos un servicio");
+let data=obtenerDetalle();
+if(data.total===0) return alert("Selecciona al menos un servicio");
 next(2);
 }
 
-/* VALIDAR DATOS */
 function validarDatos(){
 if(!cliente.value || !ruc.value || !correo.value || !telefono.value || !contacto.value){
 alert("Completa todos los datos");
@@ -272,29 +266,51 @@ if(!validarDatos()) return;
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
-let y=10;
+let data=obtenerDetalle();
 
-doc.setFontSize(16);
-doc.text("COTIZACIÓN PETROCHECK",10,y);
-y+=10;
+let texto=`
+COTIZACIÓN PETROCHECK
 
-doc.setFontSize(11);
-doc.text(`Cliente: ${cliente.value}`,10,y); y+=6;
-doc.text(`RUC: ${ruc.value}`,10,y); y+=6;
-doc.text(`Correo: ${correo.value}`,10,y); y+=6;
-doc.text(`Teléfono: ${telefono.value}`,10,y); y+=6;
-doc.text(`Contacto: ${contacto.value}`,10,y); y+=10;
+Cliente: ${cliente.value}
+RUC: ${ruc.value}
+Correo: ${correo.value}
+Teléfono: ${telefono.value}
+Contacto: ${contacto.value}
 
-doc.text(document.getElementById("resumenFinal").innerText,10,y);
+DETALLE:
+${data.detalle}
 
-doc.save("cotizacion_autotanque.pdf");
+TOTAL: $${data.total}
+
+NOTA:
+El servicio se realizará en el patio de calibraciones de PETROCHECK (Quito).
+El cliente debe movilizar el autotanque.
+`;
+
+doc.text(texto,10,10);
+doc.save("cotizacion.pdf");
 }
 
 /* WHATSAPP */
 function enviarWhatsApp(){
 if(!validarDatos()) return;
 
-let txt=`COTIZACIÓN PETROCHECK\n\nCliente: ${cliente.value}\nRUC: ${ruc.value}\nCorreo: ${correo.value}\nTeléfono: ${telefono.value}\n\n${document.getElementById("resumenFinal").innerText}`;
+let data=obtenerDetalle();
+
+let txt=`
+COTIZACIÓN PETROCHECK
+
+Cliente: ${cliente.value}
+RUC: ${ruc.value}
+Correo: ${correo.value}
+Teléfono: ${telefono.value}
+Contacto: ${contacto.value}
+
+DETALLE:
+${data.detalle}
+
+TOTAL: $${data.total}
+`;
 
 window.open("https://wa.me/593999300398?text="+encodeURIComponent(txt));
 }
